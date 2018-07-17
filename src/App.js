@@ -1,3 +1,5 @@
+import React from "react";
+
 //1. WRITE FUNCTION TO CREATE STORE
 function createStore(reducer, initialState) {
   let state = initialState;
@@ -106,3 +108,85 @@ store.dispatch(deleteMessageAction)
 //
 // console.log('State v3:');
 // console.log(stateV3);
+
+class App extends React.Component {
+  //top level component uses Redux store instead of React state
+  componentDidMount() {
+    store.subscribe(() => this.forceUpdate());
+  }
+
+  render() {
+    const messages = store.getState().messages;
+
+    return (
+      <div className='ui segment'>
+        <MessageView messages={messages}/>
+        <MessageInput/>
+      </div>
+    );
+  }
+};
+
+//FORM TEXT INPUT COMPONENT:
+class MessageInput extends React.Component {
+  state = {
+    value: ''
+  };
+
+  onChange = (event) => {
+    this.setState({value: event.target.value})
+  }; //changes state value as user inputs (event = typing)
+
+  handleSubmit = () => {
+    store.dispatch({
+      type: 'ADD_MESSAGE',
+      message: this.state.value
+    }); //sends input value to store
+    this.setState({value: ''}); //clears input
+  };
+
+  render() {
+    return (
+      <div className='ui input'>
+        <input
+          onChange={this.onChange}
+          value={this.state.value}
+          type='text'
+        />
+        <input
+          type='submit'
+          onClick={this.handleSubmit}
+          className='ui primary button'
+        />
+      </div>
+    )
+  }
+};
+
+class MessageView extends React.Component {
+  handleClick = (index) => {
+    store.dispatch({
+      type: 'DELETE_MESSAGE',
+      index: index
+    });
+  };
+
+  render() {
+    const messages = this.props.messages.map((message, index) => (
+      <div
+        className='comment'
+        key={index}
+        onClick={() => this.handleClick(index)}
+      >
+        {message}
+      </div>
+    ))
+    return (
+      <div className='ui comments'>
+        {messages}
+      </div>
+    )
+  }
+};
+
+export default App;
